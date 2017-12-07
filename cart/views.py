@@ -1,3 +1,4 @@
+#encoding=utf-8
 from django.shortcuts import render
 from django.http import JsonResponse
 from books.models import Books
@@ -53,6 +54,80 @@ def cart_add(request):
 
 	#返回结果
 	return JsonResponse({'res': 5})
+
+def cart_count(request):
+	'''获取用户购物车中的商品数量'''
+	#判断用户是否登录
+	if not request.session.has_key("is_login"):
+		return JsonResponse({"res": 0})
+
+	#计算用户购物车中商品的数量
+	conn = get_redis_connection("default")
+	cart_key = 'cart_%d' % request.session.get('passport_id')
+	res = 0
+	res_list = conn.hvals(cart_key)
+
+	for i in res_list:
+		res += int(i)
+
+	#返回结果
+	return JsonResponse({"res": res})
+
+@login_required
+def cart_show(request):
+	'''显示用户购物车页面'''
+	passport_id = request.session.get("passport_id")
+	#获取用户购物车的记录
+	conn = get_redis_connection("default")
+	cart_key = 'cart_%d' % passport_id
+	res_dict = conn.hgetall(cart_key)
+
+	books_li = []
+	#保存所有商品的总数
+	total_count = 0
+	#保存所有商品的总价格
+	total_price = 0
+
+	#遍历res_dict获取商品的数据
+	for id,count in res_dict.items():
+		#根据ｉｄ获取商品的信息
+		books = Books.objects.get_books_by_id(books_id=id)
+		#保存商品的数目
+		books.count = count
+		#保存商品的小计
+		books.amount = int(count) * books.price
+		books_li.append(books)
+
+		total_count += int(count)
+		total_price += int(count) * books.price
+
+	#定义模板上下文
+	context = {
+		'books_li': books_li,
+		'total_count': total_count,
+		'total_price': total_price
+	}
+	return render(request, 'cart/cart.html', context)
+
+def cart_del(request):
+	'''删除用户购物车中商品的信息'''
+	#判断用户是否登录
+	if not request.session.has_key("islogin"):
+		return JsonResponse({"res": 0, "errmsg": "请先登录"})
+
+	#接收数据
+	books_id = request.POST.get("books_id")
+	#校验商品是否存放
+	if not all([books_id]):
+		return JsonResponse({"res":2, "errmsg":'商品不存在'})
+
+	#删除购物车商品信息
+	conn = get_redis_connection('default')
+	cart_key = 'cart_%d' % request.session.get("passport_id")
+	conn.hdel(cart_key, books_id)
+
+	#返回信息
+	return JsonResponse({"res":3})
 
 
 

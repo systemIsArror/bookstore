@@ -1,10 +1,33 @@
+{% load staticfiles %}
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
 	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
 	<title>尚硅谷书城-购物车</title>
-	<link rel="stylesheet" type="text/css" href="css/reset.css">
-	<link rel="stylesheet" type="text/css" href="css/main.css">
+	<link rel="stylesheet" type="text/css" href="{% static 'css/reset.css' %}">
+	<link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+    <script type="application/javascript" src="{% static 'js/jquery-1.12.4.min.js' %}"></script>
+    <script type="application/javascript">
+        $(function () {
+            //计算所有被选中商品的总价，总数量和商品小计
+            function update_total_price() {
+                total_count = 0
+                total_price = 0
+                //获取所有被选中的商品所在的ｕｌ元素
+                $(".cart_list_td").find(":checked").parents("ul").each(function () {
+                    //计算商品的小计
+                    res_dict = update_book_price($(this))
+                    total_count += res_dict.books_count
+                    total_price += res_dict.books_amount
+                })
+                //设置商品的总价和总数量
+                $(".settlements").find("em").text(total_price.toFixed(2))
+                $(".settlements").find("b").text(total_count)
+            }
+        })
+
+    </script>
+
 </head>
 <body>
 	<div class="header_con">
@@ -40,7 +63,8 @@
 		</div>		
 	</div>
 
-	<div class="total_count">全部商品<em>2</em>件</div>	
+	<div class="total_count">全部商品<em>2</em>件</div>
+
 	<ul class="cart_list_th clearfix">
 		<li class="col01">商品名称</li>
 		<li class="col02">商品单位</li>
@@ -49,22 +73,25 @@
 		<li class="col05">小计</li>
 		<li class="col06">操作</li>
 	</ul>
-	<ul class="cart_list_td clearfix">
-		<li class="col01"><input type="checkbox" name="" checked></li>
-		<li class="col02"><img src="images/book/book012.jpg"></li>
-		<li class="col03">计算机程序设计艺术<br><em>25.80元</em></li>
-		<li class="col04">册</li>
-		<li class="col05">25.80元</li>
-		<li class="col06">
-			<div class="num_add">
-				<a href="javascript:;" class="add fl">+</a>
-				<input type="text" class="num_show fl" value="1">	
-				<a href="javascript:;" class="minus fl">-</a>	
-			</div>
-		</li>
-		<li class="col07">25.80元</li>
-		<li class="col08"><a href="javascript:;">删除</a></li>
-	</ul>
+    {% for book in books_li %}
+        <ul class="cart_list_td clearfix">
+            <li class="col01"><input type="checkbox" name="books_ids" value="{{ book.id }}" checked></li>
+            <li class="col02"><img src="{% static book.image %}"></li>
+            <li class="col03">{{ book.name }}<br><em>{{ book.price }}元</em></li>
+            <li class="col04">{{ book.unit }}</li>
+            <li class="col05">{{ book.price }}元</li>
+            <li class="col06">
+                <div class="num_add">
+                    <a href="javascript:;" class="add fl">+</a>
+                    <input type="text" books_id={{ book.id }} class="num_show fl" value="{{ book.count }}">
+                    <a href="javascript:;" class="minus fl">-</a>
+                </div>
+            </li>
+            <li class="col07">{{ book.amount }}元</li>
+            <li class="col08"><a href="javascript:;">删除</a></li>
+	    </ul>
+    {% endfor %}
+
 
 	<ul class="cart_list_td clearfix">
 		<li class="col01"><input type="checkbox" name="" checked></li>
