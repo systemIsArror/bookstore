@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'users',
     'books',
     'tinymce', #富文本编辑器
+    'order',
 ]
 
 MIDDLEWARE = [

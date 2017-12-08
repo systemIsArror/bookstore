@@ -86,6 +86,8 @@ class Address(BaseModel):
 
 	objects = AddressManager()
 
+	class Meta:
+		db_table = 's_user_address'
 
 
 
