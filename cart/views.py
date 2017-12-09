@@ -58,7 +58,7 @@ def cart_add(request):
 def cart_count(request):
 	'''获取用户购物车中的商品数量'''
 	#判断用户是否登录
-	if not request.session.has_key("is_login"):
+	if not request.session.has_key("islogin"):
 		return JsonResponse({"res": 0})
 
 	#计算用户购物车中商品的数量
@@ -66,10 +66,8 @@ def cart_count(request):
 	cart_key = 'cart_%d' % request.session.get('passport_id')
 	res = 0
 	res_list = conn.hvals(cart_key)
-
 	for i in res_list:
 		res += int(i)
-
 	#返回结果
 	return JsonResponse({"res": res})
 
@@ -117,9 +115,14 @@ def cart_del(request):
 
 	#接收数据
 	books_id = request.POST.get("books_id")
+
 	#校验商品是否存放
 	if not all([books_id]):
-		return JsonResponse({"res":2, "errmsg":'商品不存在'})
+		return JsonResponse({"res":1, "errmsg":'数据不完整'})
+
+	books = Books.objects.get_books_by_id(books_id=books_id)
+	if books is None:
+		return JsonResponse({"res": 2, "errmsg": '商品不存在'})
 
 	#删除购物车商品信息
 	conn = get_redis_connection('default')
@@ -137,6 +140,7 @@ def cart_update(request):
 	#接收数据
 	books_id = request.POST.get("books_id")
 	books_count = request.POST.get("books_count")
+	print(books_count)
 
 	#数据的校验
 	if not all([books_id, books_count]):
@@ -153,7 +157,7 @@ def cart_update(request):
 
 	#更新操作
 	conn = get_redis_connection("default")
-	cart_key = "card_%d" % request.session.get("passport_id")
+	cart_key = "cart_%d" % request.session.get("passport_id")
 
 	#判断商品库存
 	if books_count > books.stock:
@@ -161,6 +165,7 @@ def cart_update(request):
 	conn.hset(cart_key, books_id, books_count)
 
 	return JsonResponse({"res": 5})
+
 
 
 

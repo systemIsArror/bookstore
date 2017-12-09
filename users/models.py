@@ -12,6 +12,7 @@ def get_hash(str):
 	return sh.hexdigest()
 
 class PassportManager(models.Manager):
+
 	def add_one_passport(self,username,password,email):
 		'''
 		添加账号信息
@@ -26,6 +27,12 @@ class PassportManager(models.Manager):
 			#账户不存在
 			return None
 
+	def check_passport(self,username):
+		try:
+			passport = self.get(username=username)
+		except self.model.DoesNotExist:
+			passport = None
+		return passport
 
 class Passport(BaseModel):
 	'''
@@ -49,6 +56,7 @@ class AddressManager(models.Manager):
 		'''查询指定用户的默认收货地址'''
 		try:
 			addr = self.get(passport_id=passport_id, is_default=True)
+			print(addr)
 		except self.model.DoesNotExist:
 			#没有默认收货地址
 			addr = None
@@ -81,7 +89,7 @@ class Address(BaseModel):
 	recipient_addr = models.CharField(max_length=256, verbose_name='收件地址')
 	zip_code = models.CharField(max_length=6, verbose_name='邮政编码')
 	recipient_phone = models.CharField(max_length=11, verbose_name='联系电话')
-	is_default = models.BooleanField(default=False, verbose_name='账户')
+	is_default = models.BooleanField(default=False, verbose_name='是否默认地址')
 	passport = models.ForeignKey('Passport', verbose_name='账户')
 
 	objects = AddressManager()

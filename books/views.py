@@ -5,10 +5,12 @@ from django.urls import reverse
 
 from books.models import Books
 from books.enums import *
+from django.views.decorators.cache import cache_page
 
 
 # Create your views here.
 
+@cache_page(60*2)
 def index(request):
 	'''显示首页'''
 	#查询每个种类的３个新品信息和4个销量最好的商品信息
