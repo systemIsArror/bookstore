@@ -6,6 +6,7 @@
 	<title>尚硅谷书城-用户中心</title>
 	<link rel="stylesheet" type="text/css" href="{% static 'css/reset.css' %}">
 	<link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+    <script type="application/javascript" src="{% static 'js/jquery-1.12.4.min.js' %}"></script>
 </head>
 <body>
 
@@ -42,6 +43,7 @@
                                         <li class="col03">{{ order_books.count }}</li>
                                         <li class="col04">{{ order_books.amount }}元</li>
                                     </ul>
+
                                 {% endfor %}
 
 							</td>
@@ -52,6 +54,9 @@
 						</tr>
 					</tbody>
 				</table>
+            {% empty %}
+                <hr>
+                <p style="text-align: center; font-size: 24px">没有历史订单记录</p>
             {% endfor %}
 
 				<div class="pagenation">

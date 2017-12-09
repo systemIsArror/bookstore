@@ -131,6 +131,10 @@ def order(request):
 	#获取订单信息
 	order_li = OrderInfo.objects.filter(passport_id=passport_id)
 
+	#判断是否存在历史订单
+	if not order_li:
+		return render(request, "users/user_center_order.html")
+
 	#遍历获取订单的商品信息
 	for order in order_li:
 		#根据订单id查询订单商品信息
@@ -152,6 +156,7 @@ def order(request):
 			"order_li": order_li,
 			"page": "order"
 		}
+		# print(order_li)
 		return render(request, "users/user_center_order.html", context)
 
 
