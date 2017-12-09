@@ -123,6 +123,12 @@
                 books_id = $(this).next().attr("books_id")
                 //更新购物车信息
                 books_count = parseInt(books_count) + 1
+                //判断数量是否超过库存
+                if (books_count > $(this).parents("ul").children("li").eq(0).children("input").attr("max_num")){
+                    alert("商品数量超过商品库存")
+                    books_count = parseInt(books_count) - 1
+                }
+
                 update_remote_cart_info(books_id, books_count)
 
                 //根据更新的结果进行操作
@@ -244,17 +250,6 @@
                 $.ajaxSettings.async = true
             }
 
-            //结算
-{#            $("#pay").click(\function () {#}
-{#                csrf = $("input[name='csrfmiddlewaretoken']").val();#}
-{#                param = {#}
-{#                    "csrfmiddlewaretoken": csrf#}
-{#                }#}
-{#                $.post('/order/place/', param,function (res) {#}
-{#                    alert(res)#}
-{#                })#}
-{#            })#}
-
         })
 
     </script>
@@ -277,7 +272,7 @@
     <form action="/order/place/" method="post">
     {% for book in books_li %}
         <ul class="cart_list_td clearfix">
-            <li class="col01"><input type="checkbox" name="books_ids" value="{{ book.id }}" checked></li>
+            <li class="col01"><input type="checkbox" name="books_ids" max_num="{{ book.stock }}" value="{{ book.id }}" checked></li>
             <li class="col02"><a href="{% url 'books:detail' books_id=book.id %}"><img src="{% static book.image %}"></a></li>
             <li class="col03">{{ book.name }}<br><em>{{ book.price }}元</em></li>
             <li class="col04">{{ book.unit }}</li>
