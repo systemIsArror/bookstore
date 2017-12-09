@@ -12,7 +12,7 @@
             update_total_price()
             function update_total_price() {
                 //获取商品的价格和数量
-                books_price = $(".show_price").children('em').text()
+                books_price = $(".show_pirze").children('em').text()
                 books_count = $(".num_show").val()
                 total_price = books_price * books_count
                 //计算商品的总价
@@ -25,6 +25,12 @@
                 books_count = parseInt(books_count) + 1
                 //重新设置值
                 $('.num_show').val(books_count)
+                //判断输入的数量是否大于商品库存数
+                if ($('.num_show').val() > $(".num_name").attr("max_num")){
+                    $('.num_show').val($(".num_name").attr("max_num"))
+                    alert("数量超出商品库存")
+                }
+
                 //计算总价
                 update_total_price()
             })
@@ -51,6 +57,11 @@
                 }
                 //重新设置值
                 $(".num_show").val(parseInt(books_count))
+                //判断输入的数量是否大于商品库存数
+                if ($('.num_show').val() > $(".num_name").attr("max_num")){
+                    $('.num_show').val($(".num_name").attr("max_num"))
+                    alert("数量超出商品库存")
+                }
                 //计算总价
                 update_total_price()
             })
@@ -104,14 +115,14 @@
 				<span class="show_unit">单  位：{{ books.unit }}</span>
 			</div>
 			<div class="book_num clearfix">
-				<div class="num_name fl">数 量：</div>
+				<div class="num_name fl" max_num="{{ books.stock }}">数 量：</div>
 				<div class="num_add fl">
 					<input type="text" class="num_show fl" value="1">
 					<a href="javascript:;" class="add fr">+</a>
 					<a href="javascript:;" class="minus fr">-</a>	
-				</div> 
+				</div>
 			</div>
-			<div class="total">总价：<em>100元</em></div>
+			<div class="total">总价：<em>元</em></div>
 			<div class="operate_btn">
                 {% csrf_token %}
 				<a href="javascript:;" class="buy_btn">立即购买</a>
@@ -189,23 +200,48 @@
 
             $.post('/cart/add/', params, function (data) {
                 if(data.res == 5){
-                    //添加成功
+                    //添加成功,
                     $('.add_jump').css({
                         'left': $add_y+80,
                         'top': $add_x+10,
                         'display': 'block'
                     });
+
                     $('.add_jump').stop().animate({
                         'left': $to_y+7,
                         'top': $to_x+7},
-                        'fast', function () {
-                            $(".add_jump").fadeOut('fast',function () {
+                        'slow', function () {
+                        //控制方块的消失速度
+                            $(".add_jump").fadeOut("fast",function () {
                                 //获取原有show_count的值
                                 count = $("#show_count").html()
                                 count = parseInt(count) + parseInt(books_count)
                                 $("#show_count").html(count)
                             })
                     })
+                    }else{
+                        //添加失败
+                        alert(data.errmsg)
+                }
+            })
+        })
+
+        //立即购买
+        $(".buy_btn").click(function () {
+            //获取商品的ｉｄ和商品数量
+            books_id = $("#add_cart").attr("books_id")
+            books_count = $(".num_show").val()
+            csrf = $("input[name='csrfmiddlewaretoken']").val()
+            //发起请求，访问/cart/add/,进行购物车数据的添加
+            params = {
+                'books_id': books_id,
+                'books_count': books_count,
+                'csrfmiddlewaretoken': csrf
+            }
+
+            $.post('/cart/add/', params, function (data) {
+                if(data.res == 5){
+                   location.href = "{% url 'cart:show' %}"
                 }else{
                     //添加失败
                     alert(data.errmsg)

@@ -1,6 +1,8 @@
 #encoding=utf-8
 from django.shortcuts import render, redirect
 from django.core.urlresolvers import reverse
+from django.views.decorators.csrf import csrf_exempt
+
 from utils.decorators import login_required
 from django.http import HttpResponse,JsonResponse
 from users.models import Address
@@ -8,10 +10,12 @@ from books.models import Books
 from order.models import OrderGoods,OrderInfo
 from django_redis import get_redis_connection
 from datetime import datetime
+from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 import os
 import time
 from django.db import transaction
+import json
 
 # Create your views here.
 @login_required
@@ -72,17 +76,20 @@ def order_place(request):
 	}
 	return render(request, 'order/place_order.html', context)
 
+# @csrf_exempt
 @transaction.atomic()
 def order_commit(request):
 	'''生成订单'''
 	if not request.session.has_key("islogin"):
 		return JsonResponse({'res': 0, "errmsg": "用户未登录"})
-
+	print(request.POST)
 	#接收数据
+	# data = json.loads(request.body.decode("utf-8"))
+	# print(data["books_ids"])
 	addr_id = request.POST.get("addr_id")
 	pay_method = request.POST.get("pay_method")
-	books_ids = request.POST.get("books_ids")
-
+	books_ids = request.POST.getlist("books_ids[]")
+	print(books_ids,addr_id,pay_method)
 	#进行数据校验
 	if not all([addr_id, pay_method, books_ids]):
 		return JsonResponse({"res": 1, "errmsg": "数据不完整"})
@@ -120,7 +127,7 @@ def order_commit(request):
 								transit_price=transit_price,
 								pay_method=pay_method)
 		#向订单商品表中添加订单商品的记录
-		books_ids = books_ids.split(",")
+		# books_ids = books_ids.split(",")
 		conn = get_redis_connection("default")
 		cart_key = "cart_%d" % passport_id
 

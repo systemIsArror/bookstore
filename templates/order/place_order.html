@@ -49,8 +49,8 @@
 		</ul>
         {% for book in books_li %}
             <ul class="book_list_td clearfix">
-                <li class="col01">{{ forloop.counter }}</li>
-                <li class="col02"><img src="{% static books.image %}"></li>
+                <li class="col01" data-book_id="{{ book.id }}">{{ forloop.counter }}</li>
+                <li class="col02"><img src="{% static book.image %}"></li>
                 <li class="col03">{{ book.name }}</li>
                 <li class="col04">{{ book.unit }}</li>
                 <li class="col05">{{ book.price }}元</li>
@@ -62,7 +62,7 @@
 	</div>
 
 	<h3 class="common_title">总金额结算</h3>
-
+    {% csrf_token %}
 	<div class="common_list_con clearfix">
 		<div class="settle_con">
 			<div class="total_book_count">共<em>{{ total_count }}</em>件商品，总金额<b>{{ total_price }}元</b></div>
@@ -102,7 +102,11 @@
 			//获取收货地址的id，支付方式，用户购买的商品id
             addr_id = $("input[name='addr_id']").val()
             pay_method = $("input[name='pay_style']:checked").val()
-            books_ids = $(this).attr("books_ids")
+            books_ids = []
+            $(".book_list_td").each(function (index, value) {
+                books_ids.push($(value).children().eq(0).data("book_id"))
+            })
+            console.log('xxxxx: ', books_ids)
             csrf = $("input[name='csrfmiddlewaretoken']").val()
             //发起post请求，访问/order/commit/
             params = {
@@ -111,6 +115,7 @@
                 'books_ids': books_ids,
                 'csrfmiddlewaretoken': csrf
             }
+            console.log(params)
             $.post("/order/commit/", params, function (data) {
                 //根据json进行处理
                 if (data.res == 6){
