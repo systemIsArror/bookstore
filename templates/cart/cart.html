@@ -278,7 +278,7 @@
     {% for book in books_li %}
         <ul class="cart_list_td clearfix">
             <li class="col01"><input type="checkbox" name="books_ids" value="{{ book.id }}" checked></li>
-            <li class="col02"><img src="{% static book.image %}"></li>
+            <li class="col02"><a href="{% url 'books:detail' books_id=book.id %}"><img src="{% static book.image %}"></a></li>
             <li class="col03">{{ book.name }}<br><em>{{ book.price }}元</em></li>
             <li class="col04">{{ book.unit }}</li>
             <li class="col05">{{ book.price }}元</li>
