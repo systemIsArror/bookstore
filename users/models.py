@@ -55,8 +55,7 @@ class AddressManager(models.Manager):
 	def get_default_address(self,passport_id):
 		'''查询指定用户的默认收货地址'''
 		try:
-			addr = self.get(passport_id=passport_id, is_default=True)
-			print(addr)
+			addr = self.get(passport_id=passport_id, is_default=True, is_delete=False)
 		except self.model.DoesNotExist:
 			#没有默认收货地址
 			addr = None
@@ -75,13 +74,48 @@ class AddressManager(models.Manager):
 			is_default = True
 		#添加一个地址
 		addr = self.create(passport_id=passport_id,
-							recipient=recipient_name,
+							recipient_name=recipient_name,
 							recipient_addr=recipient_addr,
 							zip_code=zip_code,
 							recipient_phone=recipient_phone,
 							is_default=is_default)
 		return addr
 
+	def get_other_address(self,passport_id):
+		'''查询指定用户的非默认收货地址'''
+		try:
+			addr = self.filter(passport_id=passport_id, is_default=False, is_delete=False)
+		except self.model.DoesNotExist:
+			#没有默认收货地址
+			addr = None
+		return addr
+
+	def del_address(self,addr_id):
+		'''删除用户收货地址'''
+		try:
+			#get如果获取到多条信息会报错
+			addr = self.get(id=addr_id)
+			if addr:
+				addr.is_delete= True
+				addr.save()
+		except self.model.DoesNotExist:
+			#收货地址错误
+			addr = None
+		return addr
+
+	def update_address(self,passport_id,addr_id):
+		'''更改用户默认收货地址'''
+		try:
+			#首先判断收地地址是否在数据库中存在，如果存在才修改默认收货地址
+			addr = self.get(id=addr_id)
+			if addr:
+				self.filter(passport_id=passport_id).update(is_default=False)
+				addr.is_default = True
+				addr.save()
+		except self.model.DoesNotExist:
+			#收货地址错误
+			addr = None
+		return addr
 
 class Address(BaseModel):
 	'''地址模型类'''

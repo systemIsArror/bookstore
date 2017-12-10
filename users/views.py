@@ -99,7 +99,8 @@ def address(request):
 		#显示地址页面
 		#查询用户的默认地址
 		addr = Address.objects.get_default_address(passport_id=passport_id)
-		return render(request, "users/user_center_site.html", {"addr": addr, "page": "address"})
+		other_addr = Address.objects.get_other_address(passport_id=passport_id)
+		return render(request, "users/user_center_site.html", {"addr": addr, "page": "address", "addrlist": other_addr})
 	else:
 		# 添加收货地址
 		# 1. 接收数据
@@ -158,6 +159,33 @@ def order(request):
 		}
 		# print(order_li)
 		return render(request, "users/user_center_order.html", context)
+
+@login_required
+def del_address(request):
+	'''删除用户收货地址'''
+	#首先获取到用户的收货地址ｉｄ
+	addr_id = request.POST.get("id")
+
+	addr = Address.objects.del_address(addr_id)
+	#判断是否删除成功
+	if addr:
+		#删除成功
+		return JsonResponse({"res": 200})
+	else:
+		#删除错误
+		return JsonResponse({"res": 500})
+
+@login_required
+def update_address(request):
+	'''设置默认收货地址'''
+	#首先获取待设置的默认收货地址和用户ｉｄ
+	aid = request.POST.get("id")
+	passport_id = request.session.get("passport_id")
+	addr = Address.objects.update_address(passport_id=passport_id, addr_id=aid)
+	if addr:
+		return JsonResponse({"res": 200})
+	else:
+		return JsonResponse({"res": 500})
 
 
 

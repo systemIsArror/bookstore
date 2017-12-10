@@ -7,6 +7,57 @@
 	<link rel="stylesheet" type="text/css" href="{% static 'css/reset.css' %}">
 	<link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
     <script type="application/javascript" src="{% static 'js/jquery-1.12.4.min.js' %}"></script>
+    <style type="text/css">
+        a{
+            color:black;
+        }
+        a:hover{
+            color:#ff8800;
+        }
+    </style>
+    <script type="application/javascript">
+        $(function () {
+            //删除收货地址
+            $(".site_con dl").find("a:last").click(function () {
+                addr_id = $(this).attr("addr_id");
+                params = {
+                    "id": addr_id,
+                    "csrfmiddlewaretoken": $("input[name='csrfmiddlewaretoken']").val()
+                };
+                $.post('/user/del/', params, function (res) {
+                    if(res.res === 200){
+                        //删除成功,并刷新当前页面
+                        location.reload()
+                    }else{
+                        //删除失败
+                        alert("删除失败，无效的收货地址")
+                    }
+                })
+
+
+            });
+
+            //设置默认收货地址
+            $(".site_con dd:gt(0)").find("a:first").click(function () {
+                addr_id = $(this).next("a").attr("addr_id");
+                params = {
+                    "id": addr_id,
+                    "csrfmiddlewaretoken": $("input[name='csrfmiddlewaretoken']").val()
+                };
+                $.post('/user/update/', params, function (res) {
+                    if(res.res === 200){
+                        //删除成功,并刷新当前页面
+                        location.reload()
+                    }else{
+                        //删除失败
+                        alert("更新失败，无效的收货地址")
+                    }
+                })
+
+
+            })
+        })
+    </script>
 </head>
 <body>
 
@@ -25,12 +76,21 @@
 				<h3 class="common_title2">收货地址</h3>
 				<div class="site_con">
 					<dl>
-						<dt>当前地址：</dt>
+						<dt>当前收货地址：</dt>
                         {% if addr %}
-                            <dd>{{ addr.recipient_addr }} ({{ addr.recipient_name }}收){{ addr.recipient_phone }} </dd>
+                            <dd>{{ addr.recipient_addr }} ({{ addr.recipient_name }} 收)  {{ addr.recipient_phone }}&nbsp;&nbsp;&nbsp;<a href="javascript:;" addr_id="{{ addr.id }}" >删除</a> </dd>
                         {% else %}
                             <dd>无</dd>
                         {% endif %}
+					</dl>
+                    <dl>
+						<dt>其他地址：</dt>
+                        {% for laddr in addrlist %}
+                            <dd>{{ laddr.recipient_addr }} ({{ laddr.recipient_name }} 收)  {{ laddr.recipient_phone }}&nbsp;&nbsp;&nbsp;&nbsp;<a href="javascript:;">设置为默认收货地址</a>&nbsp;&nbsp;&nbsp;<a href="javascript:;" addr_id="{{ laddr.id }}">删除</a> </dd>
+
+                        {% empty %}
+                            <dd>无</dd>
+                        {% endfor %}
 					</dl>
 				</div>
 				<h3 class="common_title2">编辑地址</h3>
@@ -53,6 +113,7 @@
 							<label>手机：</label>
 							<input type="text" name="phone">
 						</div>
+
 
 						<input type="submit" value="提交" class="info_submit">
 					</form>

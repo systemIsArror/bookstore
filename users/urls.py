@@ -1,6 +1,7 @@
 #encoding:utf-8
 from django.conf.urls import url
-from users.views import register,register_handle,user_login,login_handle,logout,user,address,order
+from users.views import register,register_handle,user_login,\
+	login_handle,logout,user,address,order,del_address,update_address
 
 urlpatterns = [
 	url(r'^register/$',register,name='register'), #用户注册
@@ -11,4 +12,6 @@ urlpatterns = [
 	url(r'^$', user, name='user'), #用户中心-信息页
 	url(r"^address/$", address, name="address"), #用户中心－地址页
 	url(r"order/$", order, name="order"), #用户中心--订单号
+	url(r"^del/$", del_address, name="del"), #删除收货地址
+	url(r"^update/$", update_address, name="update"), #删除收货地址
 ]
