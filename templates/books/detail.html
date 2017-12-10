@@ -87,7 +87,7 @@
 				</ul>
 			</div>
 			<ul class="navlist fl">
-				<li><a href="">首页</a></li>
+				<li><a href="{% url 'books:index' %}">首页</a></li>
 				<li class="interval">|</li>
 				<li><a href="">移动端书城</a></li>
 				<li class="interval">|</li>
@@ -99,7 +99,7 @@
 	<div class="breadcrumb">
 		<a href="#">全部分类</a>
 		<span>></span>
-		<a href="#">Python</a>
+		<a href="{% url 'books:list' type_id=books.type_id page=1 %}">{{ type_title }}</a>
 		<span>></span>
 		<a href="#">商品详情</a>
 	</div>
@@ -109,7 +109,7 @@
 
 		<div class="book_detail_list fr">
 			<h3>{{ books.name }}</h3>
-			<p>{{ books.desc }}</p>
+			<p style="height: 60px; overflow-y: auto; line-height: 25px;">{{ books.desc }}</p>
 			<div class="prize_bar">
 				<span class="show_pirze">¥<em>{{ books.price }}</em></span>
 				<span class="show_unit">单  位：{{ books.unit }}</span>

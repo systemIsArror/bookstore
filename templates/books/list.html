@@ -6,6 +6,7 @@
 	<title>尚硅谷书城-商品列表</title>
 	<link rel="stylesheet" type="text/css" href="{% static 'css/reset.css' %}">
 	<link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+    <script type="application/javascript" src="{% static 'js/jquery-1.12.4.min.js' %}"></script>
 </head>
 <body>
     {% include 'books/nav.html' %}
@@ -25,7 +26,7 @@
 				</ul>
 			</div>
 			<ul class="navlist fl">
-				<li><a href="">首页</a></li>
+				<li><a href="{% url 'books:index' %}">首页</a></li>
 				<li class="interval">|</li>
 				<li><a href="">移动端书城</a></li>
 				<li class="interval">|</li>

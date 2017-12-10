@@ -36,7 +36,6 @@
 						<tr>
 							<td width="55%">
                                 {% for order_books in order.order_books_li %}
-
                                     <ul class="order_book_list clearfix">
                                         <li class="col01"><img src="{% static order_books.books.image %}"></li>
                                         <li class="col02">{{ order_books.books.name }}<em>{{ order_books.books.price }}元/{{ order_books.books.unit }}</em></li>

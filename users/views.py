@@ -146,6 +146,7 @@ def order(request):
 
 		#计算商品的小计
 		for order_books in order_books_li:
+			print(order_books)
 			count = order_books.count
 			price = order_books.price
 			amount = count * count
