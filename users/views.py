@@ -5,9 +5,11 @@ import re
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
+from books.models import Books
 from order.models import OrderInfo, OrderGoods
 from .models import Passport,Address
 from utils.decorators import login_required
+from books.enums import PYTHON
 
 # Create your views here.
 def register(request):
@@ -80,7 +82,7 @@ def user(request):
 	#获取用户的基本信息
 	addr = Address.objects.get_default_address(passport_id=passport_id)
 
-	books_li = []
+	books_li = Books.objects.get_books_by_type(PYTHON)
 
 	context = {
 		'addr': addr,
