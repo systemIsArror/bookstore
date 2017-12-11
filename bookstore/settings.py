@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'tinymce', #富文本编辑器
     'order',
     'cart',
+    'comments',
 ]
 
 MIDDLEWARE = [
