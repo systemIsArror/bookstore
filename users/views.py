@@ -10,6 +10,7 @@ from order.models import OrderInfo, OrderGoods
 from .models import Passport,Address
 from utils.decorators import login_required
 from books.enums import PYTHON
+from order.models import OrderInfo
 
 # Create your views here.
 def register(request):
@@ -143,25 +144,25 @@ def order(request):
 		#根据订单id查询订单商品信息
 		order_id = order.order_id
 		order_books_li = OrderGoods.objects.filter(order_id=order_id)
+		order.status = OrderInfo.ORDER_STATUS_CHOICES[order.status-1][1]
 
 		#计算商品的小计
 		for order_books in order_books_li:
-			print(order_books)
 			count = order_books.count
 			price = order_books.price
-			amount = count * count
+			amount = count * price
 			#保存订单中每个商品的小计
 			order_books.amount = amount
 
 		#给order对象动态增加一个属性order_goods_li,保存订单中商品的信息
 		order.order_books_li = order_books_li
 
-		context = {
-			"order_li": order_li,
-			"page": "order"
-		}
-		# print(order_li)
-		return render(request, "users/user_center_order.html", context)
+	context = {
+		"order_li": order_li,
+		"page": "order"
+	}
+	print(order_li)
+	return render(request, "users/user_center_order.html", context)
 
 @login_required
 def del_address(request):

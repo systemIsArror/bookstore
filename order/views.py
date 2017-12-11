@@ -29,9 +29,7 @@ def order_place(request):
 		return redirect(reverse("cart:show"))
 
 	#用户收货地址
-	print(request.session.get('username'))
 	passport_id = request.session.get("passport_id")
-	print(passport_id)
 	addr = Address.objects.get_default_address(passport_id=passport_id)
 
 	#用户呀购买商品的信息

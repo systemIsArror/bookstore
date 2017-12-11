@@ -287,6 +287,9 @@
             <li class="col07">{{ book.amount }}元</li>
             <li class="col08"><a href="javascript:;">删除</a></li>
 	    </ul>
+    {% empty %}
+        <div class="cart_list_td clearfix" style="text-align: center; font-size: 20px; line-height: 100px;">
+            购物车无商品信息,快<a href="{% url "books:index" %}" style="color: red; font-weight: bold;">去购物</a>吧！</div>
     {% endfor %}
 	
 
