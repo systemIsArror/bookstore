@@ -10,4 +10,4 @@ class Comments(BaseModel):
 	content = models.CharField(max_length=1000, verbose_name="评论内容")
 
 	class Meta:
-		db_table = "s_comment_table"
+		db_table = "s_comment"

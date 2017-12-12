@@ -1,4 +1,5 @@
 #encoding:utf-8
+from django.core.mail import send_mail
 from django.http import JsonResponse
 from django.shortcuts import render,redirect
 import re
@@ -6,11 +7,14 @@ from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
 from books.models import Books
+from bookstore import settings
 from order.models import OrderInfo, OrderGoods
 from .models import Passport,Address
 from utils.decorators import login_required
 from books.enums import PYTHON
 from order.models import OrderInfo
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from itsdangerous import SignatureExpired
 
 # Create your views here.
 def register(request):
@@ -32,8 +36,20 @@ def register_handle(request):
 	p = Passport.objects.check_passport(username=username)
 	if p:
 		return render(request, 'users/register.html', {"errmsg": "用户名已经存在"})
+
 	#向数据库中插入数据
-	Passport.objects.add_one_passport(username=username,password=password,email=email)
+	passport = Passport.objects.add_one_passport(username=username,password=password,email=email)
+
+	#生产激活的token
+	serializer = Serializer(settings.SECRET_KEY, 3600)
+	token = serializer.dumps({"confirm": passport.id}) #返回bytes
+	token = token.decode()
+
+	#给用户的邮箱发激活邮件
+	send_mail("尚硅谷书城用户激活", settings.EMAIL_FROM, [email],
+			  html_message='<a href="http://127.0.0.1:8000/user/active/%s/">http://127.0.0.1:8000/user/active/</a>' % token)
+
+
 	return redirect(reverse('user:login'))
 
 def user_login(request):
@@ -190,8 +206,6 @@ def update_address(request):
 		return JsonResponse({"res": 200})
 	else:
 		return JsonResponse({"res": 500})
-
-
 
 
 

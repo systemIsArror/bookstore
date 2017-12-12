@@ -21,6 +21,9 @@
             line-height: 38px;
             text-align: center;
         }
+        #comment-input{
+            display: None;
+        }
     </style>
     <script type="application/javascript" src="{% static 'js/jquery-1.12.4.min.js' %}"></script>
     <script type="application/javascript">
@@ -95,8 +98,8 @@
                         for(i = 0; i < data.length; i++){
                             var head = "<div>"
                             var tail = "</div>"
-                            var temp = head + "<span>" + data[i].user_id + "</span>" + "<br>" +
-                                    '<span>' + data[i].content + "</span>";
+                            var temp = head + "<span>用户名：" + data[i].user_name + "</span>" + "<br/>" +
+                                    '<span>评论信息：' + data[i].content + "</span><br/><hr>";
                             dom_element += temp;
                         }
                         dom_element = div_head + dom_element + div_tail;
@@ -112,17 +115,17 @@
             });
             $("#comment").click(function () {
                 $(this).addClass("active");
-                $("#detail").removeClass("#active")
+                $("#detail").removeClass("active")
                 $("#book_comment").show()
                 $("#book_detail").hide()
             })
-            $("#write-comment").click(function () {
+            $("#write-commit").click(function () {
                 $("#comment-input").show();
             })
-            $("submit-comment").click(function () {
+            $("#submit-comment").click(function () {
                 var book_id = $("#comment-input").data("bookid");
                 var user_id = $("#comment-input").data("userid");
-                var content = $("#comment-input .input").val();
+                var content = $("#comment-input input").val();
                 var data = {
                     book_id: book_id,
                     user_id: user_id,
@@ -203,7 +206,7 @@
 				<a href="javascript:;" books_id="{{ books.id }}" class="add_cart" id="add_cart">加入购物车</a>
                 <a href="javascript:;" id="write-commit" class="comment">我要写评论</a>
 			</div>
-            <div style="display: flex;" id="comment-input" data-bookid="{{ books.id }}"
+            <div id="comment-input" data-bookid="{{ books.id }}"
             data-userid="{{ request.session.passport_id }}">
                 <div>
                     <input type="text" placeholder=""评论内容>
@@ -233,18 +236,22 @@
 
 		<div class="r_wrap fr clearfix">
 			<ul class="detail_tab clearfix">
-				<li class="active">商品介绍</li>
-				<li>评论</li>
+				<li class="active" id="detail">商品介绍</li>
+				<li id="comment">评论</li>
 			</ul>
 
-			<div class="tab_content">
+			<div class="tab_content" id="book_detail">
 				<dl>
 					<dt>商品详情：</dt>
 					<dd>《计算机程序设计艺术》系列是公认的计算机科学领域经典之作，深入阐述了程序设计理论，对计算机领域的发展有着极为深远的影响。本书是该系列的第 1 卷，讲解基本算法，其中包含了其他各卷都需用到的基本内容。本卷从基本概念开始，然后讲述信息结构，并辅以大量的习题及答案。 </dd>
 				</dl>
 			</div>
 
+            <div id="book_comment" style="display: none; border: 1px solid white; font-size: 16px; line-height: 24px">
+
+			</div>
 		</div>
+
 	</div>
 
 	<div class="footer">

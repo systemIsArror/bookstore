@@ -156,6 +156,16 @@ SESSION_CACHE_ALIAS = 'default'
 
 ALIPAY_URL = "https://openapi.alipaydev.com/gateway.do"
 
+#发送邮件功能
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.qq.com"
+EMAIL_PORT = 465
+#发送邮件的邮箱
+EMAIL_HOST_USER = "892966404@qq.com"
+#在邮箱中设置的客户端授权密码
+EMAIL_HOST_PASSWORD = "2210004157@qq.com"
+#收件人看到的发件人
+EMAIL_FROM = "XZ<892966404@qq.com>"
 
 
 

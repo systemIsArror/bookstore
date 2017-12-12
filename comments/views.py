@@ -7,16 +7,19 @@ import json
 from books.models import Books
 from comments.models import Comments
 from users.models import Passport
+from utils.decorators import login_required
 # Create your views here.
 
 #设置过期时间
-EXPIRE_TIME = 60 * 10
+EXPIRE_TIME = 60 * 3
 #链接redis数据库
 pool = redis.ConnectionPool(host="localhost", port=6380, db=2)
 redis_db = redis.Redis(connection_pool=pool)
 
+
 @csrf_exempt
 @require_http_methods(["GET","POST"])
+@login_required
 def comment(request, books_id):
 	book_id = books_id
 	if request.method == "GET":
@@ -24,6 +27,7 @@ def comment(request, books_id):
 		c = redis_db.get("comment_%s" % books_id)
 		try:
 			c = c.decode("utf-8")
+			print(c)
 		except:
 			pass
 
@@ -32,19 +36,21 @@ def comment(request, books_id):
 				"code": 200,
 				"data": json.loads(c),
 			})
+
 		else:
 			#找不到，就从数据库里面取
 			comments = Comments.objects.filter(book_id=book_id)
 			data = []
 			for c in comments:
 				data.append({
-					"user_id": c.user_id,
+					"user_name": c.user.username,
 					"content": c.content,
 				})
 			res = {
 				"code": 200,
 				"data": data,
 			}
+
 			try:
 				redis_db.setex("comment_%s" % book_id, json.dumps(data), EXPIRE_TIME)
 			except Exception as e:
