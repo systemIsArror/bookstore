@@ -1,5 +1,6 @@
 #encoding:utf-8
-from django.core.mail import send_mail
+from django.db import transaction
+from django.http import HttpResponse
 from django.http import JsonResponse
 from django.shortcuts import render,redirect
 import re
@@ -7,7 +8,7 @@ from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
 from books.models import Books
-from bookstore import settings
+from django.conf import settings
 from order.models import OrderInfo, OrderGoods
 from .models import Passport,Address
 from utils.decorators import login_required
@@ -15,11 +16,13 @@ from books.enums import PYTHON
 from order.models import OrderInfo
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from itsdangerous import SignatureExpired
+from users.tasks import send_active_email
 
 # Create your views here.
 def register(request):
 	return render(request,'users/register.html')
 
+@transaction.atomic()
 def register_handle(request):
 	'''用户注册'''
 	username = request.POST.get('user_name')
@@ -44,12 +47,8 @@ def register_handle(request):
 	serializer = Serializer(settings.SECRET_KEY, 3600)
 	token = serializer.dumps({"confirm": passport.id}) #返回bytes
 	token = token.decode()
-
-	#给用户的邮箱发激活邮件
-	send_mail("尚硅谷书城用户激活", settings.EMAIL_FROM, [email],
-			  html_message='<a href="http://127.0.0.1:8000/user/active/%s/">http://127.0.0.1:8000/user/active/</a>' % token)
-
-
+	# 给用户的邮箱发激活邮件
+	send_active_email.delay(token, username, email)
 	return redirect(reverse('user:login'))
 
 def user_login(request):
@@ -57,14 +56,17 @@ def user_login(request):
 
 @csrf_exempt
 def login_handle(request):
+
 	'''进行用户登录验证'''
 	username = request.POST.get("username")
 	password = request.POST.get("password")
 	remember = request.POST.get("remember")
-	print(username)
-	print(password)
-	if not all([username,password]):
+	vc = request.POST.get("verifycode")
+	if not all([username,password,vc]):
 		return JsonResponse({"res": 2})
+
+	if vc.upper() != request.session.get("verifycode"):
+		return JsonResponse({"res": 3})
 
 	passport = Passport.objects.get_one_passport(username=username, password=password)
 	if passport:
@@ -207,6 +209,52 @@ def update_address(request):
 	else:
 		return JsonResponse({"res": 500})
 
+#验证码
+def verifycode(request):
+	#引入绘图模块
+	from PIL import Image, ImageDraw, ImageFont
+	#引入随机函数数模块
+	import random
+	#定义变量，用于换面的背景色，宽，高
+	bgcolor = (random.randrange(20, 100), random.randrange(20, 100), 255)
+	width = 100
+	height = 25
+	#创建画面对象
+	im = Image.new("RGB", (width, height), bgcolor)
+	#创建画笔对象
+	draw = ImageDraw.Draw(im)
+	#调用画笔的point()函数绘制噪点
+	for i in range(0, 100):
+		xy = (random.randrange(0, width), random.randrange(0, height))
+		fill = (random.randrange(0, 255), 255, random.randrange(0, 255))
+		draw.point(xy, fill=fill)
+	#定义验证码的备选值
+	str1 = "ABCD123EFG0703HIGK682720MNOPQ34210RSJOVWSNXZ"
+	#随机选取４个值作为验证码
+	rand_str = ""
+	for i in range(0, 4):
+		rand_str += str1[random.randrange(0, len(str1))]
+	#构造字体对象
+	font = ImageFont.truetype("/usr/share/fonts/truetype/fonts-japanese-gothic.ttf", 15)
+	#构造字体颜色
+	fontcolor = (255, random.randrange(0, 255), random.randrange(0, 255))
+	#绘制4个字
+	draw.text((5, 2), rand_str[0], font=font, fill=fontcolor)
+	draw.text((25, 2), rand_str[1], font=font, fill=fontcolor)
+	draw.text((50, 2), rand_str[2], font=font, fill=fontcolor)
+	draw.text((75, 2), rand_str[3], font=font, fill=fontcolor)
+
+	#释放画笔
+	del draw
+	#存入session,用于作进一步验证
+	request.session["verifycode"] = rand_str
+	#内存文件操作
+	import io
+	buf = io.BytesIO()
+	#将图片保存在内存中，看文件类型为png
+	im.save(buf, "png")
+	#将内存中的图片数据返回给客户端，MIME类型为图片png
+	return HttpResponse(buf.getvalue(), "image/png")
 
 
 

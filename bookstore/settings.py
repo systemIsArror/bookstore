@@ -158,14 +158,15 @@ ALIPAY_URL = "https://openapi.alipaydev.com/gateway.do"
 
 #发送邮件功能
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.qq.com"
-EMAIL_PORT = 465
+EMAIL_HOST = "smtp.163.com"
+EMAIL_PORT = 25
 #发送邮件的邮箱
-EMAIL_HOST_USER = "892966404@qq.com"
+EMAIL_HOST_USER = "systems_error@163.com"
 #在邮箱中设置的客户端授权密码
-EMAIL_HOST_PASSWORD = "2210004157@qq.com"
+# EMAIL_HOST_PASSWORD = "system@163.com"
+EMAIL_HOST_PASSWORD = "13541332724xz"
 #收件人看到的发件人
-EMAIL_FROM = "XZ<892966404@qq.com>"
+EMAIL_FROM = "XZ<systems_error@163.com>"
 
 
 
