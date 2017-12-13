@@ -2,6 +2,7 @@
 from django.core.paginator import Paginator
 from django.shortcuts import render,redirect
 from django.urls import reverse
+from django_redis import get_redis_connection
 
 from books.models import Books
 from books.enums import *
@@ -55,11 +56,25 @@ def detail(request,books_id):
 		return redirect(reverse('books:index'))
 
 	#新品推荐
-	books_li = Books.objects.get_books_by_type(type_id=books.type_id, limit=2, sort='new')
-	type_title = BOOKS_TYPE[books.type_id]
+	books_li = Books.objects.get_books_by_type(type_id=books.type_id, limit=2, sort="new")
+
+	#用户登录之后，才记录浏览记录
+	#每个用户浏览记录对应redis中的一条信息
+	if request.session.has_key("islogin"):
+		con = get_redis_connection("default")
+		key = "history_%d" + str(request.session.get('passport_id'))
+		#先从redis列表中移除books.id
+		con.lrem(key, 0, books.id)
+		con.lpush(key, books.id)
+		#保存用户最近浏览的5个商品
+		con.ltrim(key, 0, 4)
+
 	#定义上下文
-	context = {'books': books, 'books_li': books_li, "type_title": type_title}
-	return render(request, 'books/detail.html', context)
+	context = {"books": books, "books_li": books_li}
+
+	#使用模板
+	return render(request, "books/detail.html", context)
+
 
 def b_list(request, type_id, page):
 	'''商品列表页面'''

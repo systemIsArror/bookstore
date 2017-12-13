@@ -11,5 +11,6 @@ def send_active_email(token, username, email):
     message = ""
     sender = settings.EMAIL_FROM #发件人
     receiver = [email] #收件人列表
-    html_message = "<a href='http://192.168.16.58:8000/user/active/%s/'>http://192.168.16.58:8000/user/active/</a>" % token
+    # html_message = "<a href='http://192.168.16.60:8000/user/active/%s/'>http://192.168.16.60:8000/user/active/</a>" % token
+    html_message = "这是一封正确的邮件"
     send_mail(subject, message, sender, receiver, html_message=html_message)

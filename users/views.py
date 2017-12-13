@@ -6,6 +6,7 @@ from django.shortcuts import render,redirect
 import re
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
+from django_redis import get_redis_connection
 
 from books.models import Books
 from django.conf import settings
@@ -17,6 +18,7 @@ from order.models import OrderInfo
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from itsdangerous import SignatureExpired
 from users.tasks import send_active_email
+from django.core.mail import send_mail
 
 # Create your views here.
 def register(request):
@@ -48,8 +50,15 @@ def register_handle(request):
 	token = serializer.dumps({"confirm": passport.id}) #返回bytes
 	token = token.decode()
 	# 给用户的邮箱发激活邮件
-	send_active_email.delay(token, username, email)
+	# send_active_email.delay(token, username, email)
+	subject = "第一份邮件"  # 标题
+	message = ""
+	sender = settings.EMAIL_FROM  # 发件人
+	receiver = [email]  # 收件人列表
+	html_message = "<a href='http://192.168.16.60:8000/user/active/%s/'>http://192.168.16.60:8000/user/active/</a>" % token
+	send_mail(subject, message, sender, receiver, html_message=html_message)
 	return redirect(reverse('user:login'))
+
 
 def user_login(request):
 	return render(request, 'users/login.html')
@@ -101,7 +110,17 @@ def user(request):
 	#获取用户的基本信息
 	addr = Address.objects.get_default_address(passport_id=passport_id)
 
-	books_li = Books.objects.get_books_by_type(PYTHON)
+	#获取用户的最近浏览信息
+	con = get_redis_connection("default")
+	key = 'history_%d' % passport_id
+	#取出用户最近浏览的5个商品id
+	history_li = con.lrange(key, 0, 4)
+	
+	# books_li = Books.objects.get_books_by_type(PYTHON)
+	books_li = []
+	for id in history_li:
+		books = Books.objects.get_books_by_id(books_id=id)
+		books_li.append(books)
 
 	context = {
 		'addr': addr,
@@ -256,7 +275,21 @@ def verifycode(request):
 	#将内存中的图片数据返回给客户端，MIME类型为图片png
 	return HttpResponse(buf.getvalue(), "image/png")
 
-
+def register_active(request, token):
+	'''用户账户激活'''
+	serializer = Serializer(settings.SECRET_KEY,3600)
+	try:
+		info = serializer.loads(token)
+		passport_id = info["confirm"]
+		#进行用户激活
+		passport = Passport.objects.get(id=passport_id)
+		passport.is_active = True
+		passport.save()
+		#跳转到登录页
+		return redirect(reverse("user:login"))
+	except SignatureExpired:
+		#链接过期
+		return HttpResponse("激活链接已过期")
 
 
 

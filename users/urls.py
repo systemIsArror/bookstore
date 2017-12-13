@@ -1,7 +1,8 @@
 #encoding:utf-8
 from django.conf.urls import url
 from users.views import register,register_handle,user_login,\
-	login_handle,logout,user,address,order,del_address,update_address,verifycode
+	login_handle,logout,user,address,order,del_address,update_address,verifycode,register_active
+
 
 
 
@@ -17,4 +18,5 @@ urlpatterns = [
 	url(r"^del/$", del_address, name="del"), #删除收货地址
 	url(r"^update/$", update_address, name="update"), #删除收货地址
 	url(r"^verifycode/$", verifycode, name="verifycode"), #验证码功能
+	url(r"^active/(?P<token>.*)/$",register_active, name="active"), #用户激活
 ]
